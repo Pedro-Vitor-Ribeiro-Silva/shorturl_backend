@@ -1,0 +1,44 @@
+version: '3.8'
+
+services:
+  app:
+    # CORREÇÃO AQUI: O ponto (.) diz para usar o Dockerfile da pasta atual (raiz)
+    build: .
+    container_name: shorturl_app
+    ports:
+      - "8080:8080"
+    depends_on:
+      - mongodb
+      - redis
+    environment:
+      - MONGO_URI=mongodb://mongodb:27017/shorturl_db
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - RATE_LIMIT_CAPACITY=20
+    networks:
+      - shorturl-network
+
+  mongodb:
+    image: mongo:latest
+    container_name: shorturl_mongo
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - shorturl-network
+
+  redis:
+    image: redis:alpine
+    container_name: shorturl_redis
+    ports:
+      - "6379:6379"
+    networks:
+      - shorturl-network
+
+volumes:
+  mongo_data:
+
+networks:
+  shorturl-network:
+    driver: bridge

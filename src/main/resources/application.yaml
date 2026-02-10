@@ -1,0 +1,32 @@
+server:
+  port: ${PORT:8080}
+
+spring:
+  application:
+    name: shorturl
+
+  data:
+    mongodb:
+      uri: ${MONGO_URI:mongodb://localhost:27017/shorturl_db}
+      auto-index-creation: true
+
+    # Atenção: 'redis' deve estar alinhado verticalmente com 'mongodb'
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      password: ${REDIS_PASSWORD:}
+      username: ${REDIS_USERNAME:}
+      ssl:
+        enabled: ${REDIS_SSL:false}
+
+springdoc:
+  api-docs:
+    path: /api-docs
+  swagger-ui:
+    path: /swagger-ui.html
+    operations-sorter: method
+
+logging:
+  level:
+    root: INFO
+    com.pedro.shorturl: ${LOG_LEVEL:DEBUG}
