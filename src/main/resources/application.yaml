@@ -30,3 +30,13 @@ logging:
   level:
     root: INFO
     com.pedro.shorturl: ${LOG_LEVEL:DEBUG}
+
+# Monitorização para a Cloud (Isso diz ao Railway/AWS que estás vivo)
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health, info, metrics
+  endpoint:
+    health:
+      show-details: always
