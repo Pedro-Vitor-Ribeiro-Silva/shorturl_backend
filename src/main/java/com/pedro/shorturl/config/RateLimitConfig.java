@@ -5,6 +5,7 @@ import io.github.bucket4j.Bucket;
 import io.github.bucket4j.Refill;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
@@ -17,7 +18,6 @@ import java.util.concurrent.ConcurrentHashMap;
 
 @Configuration
 public class RateLimitConfig implements WebMvcConfigurer {
-
     private final RateLimitInterceptor interceptor;
 
     public RateLimitConfig(RateLimitInterceptor interceptor) {
@@ -26,37 +26,36 @@ public class RateLimitConfig implements WebMvcConfigurer {
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
-        // Aplica o rate limit apenas na rota de criar URL
-        registry.addInterceptor(interceptor)
-                .addPathPatterns("/shorten");
+        registry.addInterceptor(interceptor).addPathPatterns("/shorten");
     }
 }
 
 @Component
 class RateLimitInterceptor implements HandlerInterceptor {
-
-    // Armazena os baldes em memória (Simples e eficaz para o teste)
     private final Map<String, Bucket> cache = new ConcurrentHashMap<>();
+
+    @Value("${app.rate-limit.capacity}")
+    private int capacity;
+    @Value("${app.rate-limit.tokens}")
+    private int tokens;
+    @Value("${app.rate-limit.minutes}")
+    private int minutes;
 
     private Bucket resolveBucket(String ip) {
         return cache.computeIfAbsent(ip, k -> {
-            // Limite: 20 requisições por minuto
-            Bandwidth limit = Bandwidth.classic(20, Refill.greedy(20, Duration.ofMinutes(1)));
+            Bandwidth limit = Bandwidth.classic(capacity, Refill.greedy(tokens, Duration.ofMinutes(minutes)));
             return Bucket.builder().addLimit(limit).build();
         });
     }
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
-        String ip = request.getRemoteAddr();
-        Bucket bucket = resolveBucket(ip);
-
-        if (bucket.tryConsume(1)) {
-            return true; // Requisição permitida
+        if (resolveBucket(request.getRemoteAddr()).tryConsume(1)) {
+            return true;
         } else {
-            response.setStatus(429); // Too Many Requests
-            response.getWriter().write("Muitas requisicoes! Aguarde um minuto.");
-            return false; // Requisição bloqueada
+            response.setStatus(429);
+            response.getWriter().write("Muitas requisicoes! Aguarde.");
+            return false;
         }
     }
 }

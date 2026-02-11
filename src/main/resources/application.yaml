@@ -4,13 +4,10 @@ server:
 spring:
   application:
     name: shorturl
-
   data:
     mongodb:
       uri: ${MONGO_URI:mongodb://localhost:27017/shorturl_db}
       auto-index-creation: true
-
-    # Atenção: 'redis' deve estar alinhado verticalmente com 'mongodb'
     redis:
       host: ${REDIS_HOST:localhost}
       port: ${REDIS_PORT:6379}
@@ -31,7 +28,6 @@ logging:
     root: INFO
     com.pedro.shorturl: ${LOG_LEVEL:DEBUG}
 
-# Monitorização para a Cloud (Isso diz ao Railway/AWS que estás vivo)
 management:
   endpoints:
     web:
@@ -40,3 +36,14 @@ management:
   endpoint:
     health:
       show-details: always
+
+# --- CONFIGURAÇÕES CUSTOMIZADAS (Lidas pelo Java) ---
+app:
+  cors:
+    allowed-origins: ${CORS_ALLOWED_ORIGINS:*}
+  cache:
+    ttl-hours: ${CACHE_TTL_HOURS:24}
+  rate-limit:
+    capacity: ${RATE_LIMIT_CAPACITY:20}
+    tokens: ${RATE_LIMIT_TOKENS:20}
+    minutes: ${RATE_LIMIT_MINUTES:1}
