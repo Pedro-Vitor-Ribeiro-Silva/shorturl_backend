@@ -22,10 +22,22 @@ public class UrlService {
     private long cacheTtlHours;
 
     public String shortenUrl(String originalUrl) {
+        // 1. Sanitização (Mantenha igual)
         if (!originalUrl.startsWith("http://") && !originalUrl.startsWith("https://")) {
             originalUrl = "https://" + originalUrl;
         }
 
+        // 2. VERIFICAÇÃO: Se já existe, retorna o código existente
+        // Isso evita duplicidade no MongoDB e economiza espaço
+        var existingUrl = urlRepository.findByOriginalUrl(originalUrl);
+        if (existingUrl.isPresent()) {
+            String existingCode = existingUrl.get().getShortCode();
+            // Garante que esteja no Redis (caso tenha expirado do cache mas não do banco)
+            redisTemplate.opsForValue().set(existingCode, originalUrl, cacheTtlHours, TimeUnit.HOURS);
+            return existingCode;
+        }
+
+        // 3. Se não existe, cria um novo (Lógica antiga continua aqui)
         String code;
         do {
             code = shortCodeGenerator.generate();

@@ -19,7 +19,7 @@ public class Url {
 
     @Id
     private String id; // Mongo usa String como ID por padrão (aquele hash louco)
-
+    @Indexed
     private String originalUrl; // A URL grande (ex: https://google.com/search?...)
 
     @Indexed(unique = true) // Garante que o código curto seja ÚNICO no banco

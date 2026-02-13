@@ -6,7 +6,7 @@ import java.util.Optional;
 
 public interface UrlRepository extends MongoRepository<Url, String> {
 
-    // Mágica do Spring: Ele vê "findByShortCode" e já sabe que tem que buscar
-    // no campo 'shortCode' da coleção.
     Optional<Url> findByShortCode(String shortCode);
+
+    Optional<Url> findByOriginalUrl(String originalUrl);
 }
