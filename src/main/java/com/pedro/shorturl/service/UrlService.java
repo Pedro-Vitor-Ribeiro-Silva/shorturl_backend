@@ -23,6 +23,15 @@ public class UrlService {
 
     public String shortenUrl(String originalUrl) {
         // 1. Sanitização (Mantenha igual)
+        // Remove espaços em branco antes e depois (ex: " site.com ")
+        // Remove a barra final se existir (Normalização)
+
+        originalUrl = originalUrl.trim();
+
+        if (originalUrl.endsWith("/")) {
+            originalUrl = originalUrl.substring(0, originalUrl.length() - 1);
+        }
+
         if (!originalUrl.startsWith("http://") && !originalUrl.startsWith("https://")) {
             originalUrl = "https://" + originalUrl;
         }
